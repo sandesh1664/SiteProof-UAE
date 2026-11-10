@@ -1,0 +1,32 @@
+# Full-stack deployment. Persistent disks require a paid Render service.
+services:
+  - type: web
+    name: siteproof-uae
+    runtime: node
+    plan: starter
+    buildCommand: npm run check
+    startCommand: npm start
+    healthCheckPath: /
+    numInstances: 1
+    disk:
+      name: siteproof-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "24.22.1"
+      - key: NODE_ENV
+        value: production
+      - key: DATA_DIR
+        value: /var/data
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: TECH_PASSWORD
+        generateValue: true
+      - key: SEED_DEMO
+        value: "false"
+      - key: PUBLIC_ORIGIN
+        fromService:
+          type: web
+          name: siteproof-uae
+          envVarKey: RENDER_EXTERNAL_URL
