@@ -1,0 +1,16 @@
+services:
+  siteproof:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD}
+      TECH_PASSWORD: ${TECH_PASSWORD:?Set TECH_PASSWORD}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set HTTPS PUBLIC_ORIGIN}
+      SEED_DEMO: "false"
+    volumes:
+      - siteproof_data:/app/data
+    restart: unless-stopped
+volumes:
+  siteproof_data:

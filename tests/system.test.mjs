@@ -1,0 +1,36 @@
+import {test,after} from 'node:test';
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+const dir=mkdtempSync(tmpdir()+'/siteproof-');
+const child=spawn(process.execPath,['server.mjs'],{env:{...process.env,PORT:'3107',DATA_DIR:dir},stdio:['ignore','pipe','pipe']});
+let output='';child.stdout.on('data',d=>output+=d);child.stderr.on('data',d=>output+=d);
+await new Promise((resolve,reject)=>{let n=0;const t=setInterval(()=>{if(output.includes('SiteProof ready')){clearInterval(t);resolve()}else if(n++>100){clearInterval(t);reject(Error(output))}},50)});
+after(()=>{child.kill();rmSync(dir,{recursive:true,force:true})});
+async function call(p,b,cookie){return fetch('http://localhost:3107/api'+p,{method:b?'POST':'GET',headers:{...(b?{'Content-Type':'application/json'}:{}),...(cookie?{cookie}:{})},body:b?JSON.stringify(b):undefined})}
+let admin,tech,job,link;
+test('authentication, permission boundaries, and full client handover',async()=>{
+ assert.equal((await call('/jobs')).status,401);
+ assert.equal((await call('/login',{email:'admin@siteproof.ae',password:'bad'})).status,401);
+ let r=await call('/login',{email:'admin@siteproof.ae',password:'SiteProof2026!'});assert.equal(r.status,200);admin=r.headers.get('set-cookie').split(';')[0];assert.match(r.headers.get('set-cookie'),/HttpOnly/);
+ r=await call('/login',{email:'tech@siteproof.ae',password:'SiteProof2026!'});tech=r.headers.get('set-cookie').split(';')[0];
+ assert.equal((await call('/team',{name:'Bad',email:'x@y.z',password:'123456789012',role:'admin'},tech)).status,403);
+ const b={title:'Integration test job',client:'Test Client',location:'Marina',city:'Dubai',category:'IT',date:'2026-11-10',scope:'Install and test network',amount:1000,technician:1};
+ r=await call('/jobs',b,admin);assert.equal(r.status,201);job=await r.json();link=job.token;
+ assert.equal((await call('/jobs/'+job.id,undefined,tech)).status,403);
+ assert.equal((await call('/jobs/'+job.id+'/status',{status:'Completed'},admin)).status,400);
+ assert.equal((await call('/jobs/'+job.id+'/status',{status:'Awaiting approval'},admin)).status,400);
+ for(const t of job.tasks)assert.equal((await call('/jobs/'+job.id+'/task',{id:t.id,done:true},admin)).status,200);
+ assert.equal((await call('/jobs/'+job.id+'/evidence',{note:'Bad image',kind:'After',image:'data:image/svg+xml;base64,PHN2Zz4='},admin)).status,400);
+ assert.equal((await call('/jobs/'+job.id+'/evidence',{note:'Network tested and verified',kind:'After'},admin)).status,200);
+ r=await call('/jobs/'+job.id+'/variation',{description:'Extra cable',amount:100},admin);job=await r.json();
+ assert.equal((await call('/jobs/'+job.id+'/status',{status:'Awaiting approval'},admin)).status,200);
+ assert.equal((await call('/public/'+link+'/decision',{name:'Client',decision:'approve'})).status,400);
+ assert.equal((await call('/public/'+link+'/variation',{name:'Client',id:job.variations[0].id,status:'Approved'})).status,200);
+ assert.equal((await call('/public/'+link+'/decision',{name:'Client',decision:'approve',comment:'All good'})).status,200);
+ r=await call('/public/'+link);job=await r.json();assert.equal(job.status,'Completed');assert.equal(job.token,undefined);assert.equal(job.approvals[0].name,'Client');
+ assert.equal((await call('/public/'+link+'/decision',{name:'Client',decision:'approve'})).status,400);
+ await call('/jobs/'+job.id+'/share',{},admin);assert.equal((await call('/public/'+link)).status,404);
+ await call('/logout',{},admin);assert.equal((await call('/me',undefined,admin)).status,401);
+});
