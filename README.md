@@ -1,9 +1,23 @@
 # SiteProof UAE
-### Great work. Clearly documented.
+### Field operations. Evidence. Client sign-off.
 
 A full-stack service-delivery workspace for maintenance, CCTV and IT installation teams in Dubai and Abu Dhabi. Track jobs from site visit to evidence collection, scope-change approval and client sign-off.
 
 **Built by Sandesh Joshi** · [GitHub](https://github.com/sandesh1664)
+
+![SiteProof operations dashboard](docs/operations-v2.png)
+
+## Version 2 — operations workspace
+
+- Data-driven operations dashboard with regional service schematic and delivery health. The regional visual is a schematic, not GPS tracking.
+- Five-stage work-order board and a compact register with task progress, assignees and scope values.
+- Dedicated approval desk, evidence inspector, client records and assignment dialogs.
+- Command search (`Cmd/Ctrl + K`), region/status filters and a navigable seven-day dispatch calendar.
+- Delivery workspace with a lifecycle stepper, readiness checks, scope-change control, commercial summary and activity log.
+- Redesigned client handover portal and printable service record.
+- Responsive layouts verified in a 390 px viewport.
+
+[Live interactive preview](https://siteproof-uae-sandesh.redmugitsolution11.chatgpt.site) — sample records, browser-local persistence. It does **not** connect to the Node/SQLite backend. Preview portal links work in the same browser only. The full-stack mode below uses the real server and database.
 
 ## Run in 30 seconds
 
@@ -26,7 +40,7 @@ To start without demo records, set `SEED_DEMO=false` before the first run. Users
 
 ## Product features
 
-- Responsive navy, sage and ivory workspace with overview, job search/filtering, schedule, clients, team and reports.
+- Industrial graphite, off-white and burnt-orange interface with an operations overview, board and table views, seven-day dispatch schedule, dedicated client review desk, evidence library, client records, team assignments and reports.
 - Administrator and technician accounts, scrypt password hashing, expiring HttpOnly cookie sessions, login throttling and same-origin write checks.
 - Persistent jobs, technician assignment, four-step checklist, status workflow and activity timeline.
 - Before/after/inspection evidence with optional PNG, JPEG or WebP uploads (4 MB client limit; 7 MB request limit).
@@ -50,6 +64,14 @@ To start without demo records, set `SEED_DEMO=false` before the first run. Users
 
 Completed or submitted jobs must be reopened before changing checklist/evidence/scope. Reopening retains prior decisions as history. Client names are self-declared; the portal is not an identity-verified electronic signature service.
 
+## Build the interactive demo
+
+```bash
+npm run preview:build
+```
+
+Serve the generated `dist/` directory with any static server. The demo automatically opens an illustrative admin workspace and includes a role switcher, 12 sample work orders and five sample team members. It is a demonstration transport, not authentication. The real Node server never serves `demo.js` and never loads it.
+
 ## Architecture
 
 ```mermaid
@@ -64,7 +86,8 @@ flowchart TD
 The browser uses ES modules and custom CSS. The server uses Node's HTTP, SQLite and crypto libraries. No CDN, external fonts, build tool or third-party runtime dependency is needed. This is deliberately a portable full-stack implementation rather than a framework starter.
 
 ```
-public/               Responsive application and client portal
+public/               Shared operations UI, client portal, and isolated demo transport
+ scripts/             Reproducible static preview builder
 server.mjs            HTTP routing, database schema, authentication, workflow
  tests/system.test.mjs API integration tests (temporary isolated database)
  data/                Persistent SQLite database; ignored by Git
