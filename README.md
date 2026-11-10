@@ -17,7 +17,9 @@ A full-stack service-delivery workspace for maintenance, CCTV and IT installatio
 - Redesigned client handover portal and printable service record.
 - Responsive layouts verified in a 390 px viewport.
 
-[Live interactive preview](https://siteproof-uae-sandesh.redmugitsolution11.chatgpt.site) — sample records, browser-local persistence. It does **not** connect to the Node/SQLite backend. Preview portal links work in the same browser only. The full-stack mode below uses the real server and database.
+[Live full-stack portfolio app](https://siteproof-uae-sandesh.redmugitsolution11.chatgpt.site) — Cloudflare Worker + D1 SQL, with an isolated database-backed workspace for each visitor. Choose **Try live portfolio demo** for fictional jobs, or create an account for an empty workspace. [Cloudflare setup and limits](docs/CLOUDFLARE.md). The original Node/SQLite edition remains available below.
+
+[Selected software portfolio](https://sandesh-joshi-projects.redmugitsolution11.chatgpt.site) — five public project experiences.
 
 ## Run in 30 seconds
 
@@ -31,10 +33,7 @@ npm start
 
 Open http://localhost:3000. The first run creates a persistent SQLite database and six clearly illustrative demo jobs.
 
-| Account | Email | Local demo password |
-| --- | --- | --- |
-| Administrator | admin@siteproof.ae | SiteProof2026! |
-| Technician | tech@siteproof.ae | SiteProof2026! |
+Set unique ADMIN_PASSWORD and TECH_PASSWORD environment values before the first local start. The initial admin account uses admin@siteproof.ae and the technician account uses tech@siteproof.ae. Do not reuse example credentials on a public deployment.
 
 To start without demo records, set `SEED_DEMO=false` before the first run. Users are created once; changing environment passwords after initialisation does not update existing accounts.
 
